@@ -4,6 +4,7 @@ import com.cpp.common.util.PreconditionUtils;
 import lombok.Getter;
 import lombok.ToString;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpEntity;
 
 import java.util.Map;
 
@@ -15,7 +16,7 @@ import java.util.Map;
  */
 @Getter
 @ToString
-public class HttpRequestMessage<T> {
+public class HttpRequestMessage {
 
     /**
      * request url
@@ -32,9 +33,9 @@ public class HttpRequestMessage<T> {
      */
     private Map<String, String> headers;
     /**
-     * request http content
+     * apache request http content
      */
-    private T content;
+    private HttpEntity httpEntity;
 
     public HttpRequestMessage(String url, HttpMethod httpMethod) {
         PreconditionUtils.checkArgument(StringUtils.isNotEmpty(url), "url should not be empty.");
@@ -45,10 +46,10 @@ public class HttpRequestMessage<T> {
     }
 
     public HttpRequestMessage(String url, HttpMethod httpMethod,
-                              Map<String, String> headers, T content) {
+                              Map<String, String> headers, HttpEntity httpEntity) {
         this(url, httpMethod);
         this.headers = headers;
-        this.content = content;
+        this.httpEntity = httpEntity;
     }
 
 }

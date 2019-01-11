@@ -2,6 +2,9 @@ package com.cpp.common.connection.model;
 
 import lombok.Builder;
 import lombok.Data;
+import org.apache.http.HttpEntity;
+
+import java.util.Map;
 
 /**
  * http response
@@ -11,9 +14,19 @@ import lombok.Data;
  */
 @Data
 @Builder
-public class HttpResponseResult<T> {
+public class HttpResponseResult {
 
+    /**
+     * status code
+     */
     private int statusCode;
-
-    private T content;
+    /**
+     * request headers
+     *
+     */
+    private Map<String, String> headers;
+    /**
+     * apache response content
+     */
+    private HttpEntity httpEntity;
 }

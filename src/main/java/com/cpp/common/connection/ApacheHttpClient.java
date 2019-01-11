@@ -5,7 +5,7 @@ import com.cpp.common.connection.model.HttpProxy;
 import com.cpp.common.connection.model.HttpRequestMessage;
 import com.cpp.common.connection.model.HttpResponseResult;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.HttpEntity;
+import org.apache.http.Header;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpStatus;
 import org.apache.http.NoHttpResponseException;
@@ -29,7 +29,9 @@ import javax.net.ssl.SSLHandshakeException;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * apache http client
@@ -38,7 +40,7 @@ import java.util.Map;
  * @date 2019-01-11 15:29
  */
 @Slf4j
-public class ApacheHttpClient extends ServerHttpClient<HttpEntity, HttpEntity> {
+public class ApacheHttpClient extends ServerHttpClient {
 
     /**
      * 连接池管理类
@@ -135,7 +137,7 @@ public class ApacheHttpClient extends ServerHttpClient<HttpEntity, HttpEntity> {
     }
 
     @Override
-    protected HttpResponseResult<HttpEntity> sendRequestCore(HttpRequestMessage<HttpEntity> httpRequestMessage) throws IOException {
+    protected HttpResponseResult sendRequestCore(HttpRequestMessage httpRequestMessage) throws IOException {
         HttpRequestBase httpRequest = this.createHttpRequest(httpRequestMessage);
 
         HttpClientContext httpContext = HttpClientContext.create();
@@ -146,23 +148,27 @@ public class ApacheHttpClient extends ServerHttpClient<HttpEntity, HttpEntity> {
         return processResponse(httpResponse);
     }
 
-    private HttpResponseResult<HttpEntity> processResponse(CloseableHttpResponse httpResponse) {
-        HttpResponseResult<HttpEntity> httpResponseResult;
+    private HttpResponseResult processResponse(CloseableHttpResponse httpResponse) {
+        HttpResponseResult.HttpResponseResultBuilder httpResponseResultBuilder = HttpResponseResult.builder();
         // 获取返回结果
         if (httpResponse != null && httpResponse.getStatusLine() != null) {
-            httpResponseResult = HttpResponseResult.<HttpEntity>builder()
+            httpResponseResultBuilder
                     .statusCode(httpResponse.getStatusLine().getStatusCode())
-                    .content(httpResponse.getEntity())
-                    .build();
+                    .httpEntity(httpResponse.getEntity());
+            if (null != httpResponse.getAllHeaders()) {
+                Map<String, String> headers =
+                        Arrays.stream(httpResponse.getAllHeaders()).collect(Collectors.toMap(Header::getName, Header::getValue));
+                httpResponseResultBuilder.headers(headers);
+            }
         } else {
-            httpResponseResult = HttpResponseResult.<HttpEntity>builder()
+            httpResponseResultBuilder
                     .statusCode(HttpStatus.SC_INTERNAL_SERVER_ERROR)
                     .build();
         }
-        return httpResponseResult;
+        return httpResponseResultBuilder.build();
     }
 
-    private HttpRequestBase createHttpRequest(HttpRequestMessage<HttpEntity> request) {
+    private HttpRequestBase createHttpRequest(HttpRequestMessage request) {
         String url = request.getUrl();
 
         HttpRequestBase httpRequest;
@@ -170,16 +176,16 @@ public class ApacheHttpClient extends ServerHttpClient<HttpEntity, HttpEntity> {
         if (method == HttpMethod.POST) {
             HttpPost postMethod = new HttpPost(url);
 
-            if (request.getContent() != null) {
-                postMethod.setEntity(request.getContent());
+            if (request.getHttpEntity() != null) {
+                postMethod.setEntity(request.getHttpEntity());
             }
 
             httpRequest = postMethod;
         } else if (method == HttpMethod.PUT) {
             HttpPut putMethod = new HttpPut(url);
 
-            if (request.getContent() != null) {
-                putMethod.setEntity(request.getContent());
+            if (request.getHttpEntity() != null) {
+                putMethod.setEntity(request.getHttpEntity());
             }
 
             httpRequest = putMethod;

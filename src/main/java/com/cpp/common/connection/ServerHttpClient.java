@@ -14,23 +14,26 @@ import java.io.IOException;
  * @date 2019-01-11 14:24
  */
 @Slf4j
-public abstract class ServerHttpClient<R, Q> {
+public abstract class ServerHttpClient {
 
     /**
      * client configuration
      */
     protected ClientConfiguration config;
 
-    public HttpResponseResult<Q> sendRequest(HttpRequestMessage<R> httpRequest) throws IOException {
+    public HttpResponseResult sendRequest(HttpRequestMessage httpRequest) throws IOException {
         PreconditionUtils.checkArgument(null != httpRequest, "httpRequest should not be null");
 
         long startTime = System.currentTimeMillis();
-        HttpResponseResult<Q> httpResponse = this.sendRequestCore(httpRequest);
+        HttpResponseResult httpResponse = this.sendRequestCore(httpRequest);
         long duration = System.currentTimeMillis() - startTime;
+        String requestInfo = String.format("Request cost %d ms, url [%s]%s, statusCode %d.",
+                duration, httpRequest.getHttpMethod().name(), httpRequest.getUrl(), httpResponse.getStatusCode());
         // 记录请求时长
         if (duration > this.config.getSlowRequestsThreshold()) {
-            log.warn(String.format("Request cost %d seconds, url %s, method %s, statusCode %d.",
-                    duration / 1000, httpRequest.getUrl(), httpRequest.getHttpMethod(), httpResponse.getStatusCode()));
+            log.warn(requestInfo);
+        } else {
+            log.debug(requestInfo);
         }
         return httpResponse;
     }
@@ -41,7 +44,7 @@ public abstract class ServerHttpClient<R, Q> {
      * @param httpRequest
      * @return
      */
-    protected abstract HttpResponseResult<Q> sendRequestCore(HttpRequestMessage<R> httpRequest) throws IOException;
+    protected abstract HttpResponseResult sendRequestCore(HttpRequestMessage httpRequest) throws IOException;
 
     public abstract void close();
 }
