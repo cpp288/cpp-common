@@ -1,9 +1,9 @@
 package com.cpp.common.connection.model;
 
-import com.cpp.common.util.PreconditionUtils;
 import lombok.Getter;
 import lombok.ToString;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
 import org.apache.http.HttpEntity;
 
 import java.util.Map;
@@ -38,8 +38,8 @@ public class HttpRequestMessage {
     private HttpEntity httpEntity;
 
     public HttpRequestMessage(String url, HttpMethod httpMethod) {
-        PreconditionUtils.checkArgument(StringUtils.isNotEmpty(url), "url should not be empty.");
-        PreconditionUtils.checkArgument(null != httpMethod, "httpMethod should not be null.");
+        Validate.isTrue(StringUtils.isNotEmpty(url), "url should not be empty.");
+        Validate.isTrue(null != httpMethod, "httpMethod should not be null.");
 
         this.url = url;
         this.httpMethod = httpMethod;

@@ -2,8 +2,8 @@ package com.cpp.common.connection;
 
 import com.cpp.common.connection.model.HttpRequestMessage;
 import com.cpp.common.connection.model.HttpResponseResult;
-import com.cpp.common.util.PreconditionUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.Validate;
 
 import java.io.IOException;
 
@@ -22,7 +22,7 @@ public abstract class ServerHttpClient {
     protected ClientConfiguration config;
 
     public HttpResponseResult sendRequest(HttpRequestMessage httpRequest) throws IOException {
-        PreconditionUtils.checkArgument(null != httpRequest, "httpRequest should not be null");
+        Validate.isTrue(null != httpRequest, "httpRequest should not be null");
 
         long startTime = System.currentTimeMillis();
         HttpResponseResult httpResponse = this.sendRequestCore(httpRequest);

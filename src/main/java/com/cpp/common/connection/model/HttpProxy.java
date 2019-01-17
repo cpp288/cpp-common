@@ -1,9 +1,9 @@
 package com.cpp.common.connection.model;
 
-import com.cpp.common.util.PreconditionUtils;
 import lombok.Getter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.Validate;
 import org.apache.http.HttpHost;
 
 /**
@@ -35,8 +35,8 @@ public class HttpProxy {
     public HttpProxy(String host, int port, String username, String password) {
         this(host, port);
 
-        PreconditionUtils.checkArgument(null != this.username, "username should not be null");
-        PreconditionUtils.checkArgument(null != this.password, "password should not be null");
+        Validate.isTrue(null != this.username, "username should not be null");
+        Validate.isTrue(null != this.password, "password should not be null");
 
         this.authenticationNeeded = true;
         this.username = username;
